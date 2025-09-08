@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Message to Supabase</title>
+</head>
+
+<body>
+    <h1>Submit a Message</h1>
+
+    <form id="messageForm">
+        <label for="message">Message:</label>
+        <input type="text" id="message" name="message" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <p id="status"></p>
+
+    <script src="supabase.js"></script>
+
+    <script>
+        // Supabase client instance (declared outside the function to be accessible globally)
+        let supabase;
+
+        // Function to initialize Supabase client and form handler
+        function initializeSupabase() {
+            // Your Supabase project URL and anon public key from the API settings
+            const supabaseUrl = 'https://cafvwneulpuypprppknp.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhZnZ3bmV1bHB1eXBwcnBwa25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxNjU5ODcsImV4cCI6MjA3Mjc0MTk4N30.m1jyJMdgg6o3MZZXanj0gNWQdmMVrhCy1y7scoLps_8';
+
+            // Initialize the Supabase client using the global createClient method
+            supabase = createClient(supabaseUrl, supabaseKey);
+
+            // Handle form submission
+            document.getElementById('messageForm').addEventListener('submit', async function (event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                const message = document.getElementById('message').value;
+
+                if (!message) {
+                    document.getElementById('status').innerText = 'Message cannot be empty.';
+                    return;
+                }
+
+                // Insert the message into the 'poster_messages' table
+                const { data, error } = await supabase
+                    .from('poster_messages')
+                    .insert([{
+                        message: message
+                    }]);
+
+                if (error) {
+                    document.getElementById('status').innerText = `Error: ${error.message}`;
+                    console.error('Insert Error:', error);
+                } else {
+                    document.getElementById('status').innerText = 'Message submitted successfully!';
+                    document.getElementById('message').value = ''; // Clear the input field
+                    console.log('Insert successful:', data);
+                }
+            });
+        }
+
+        // Call the initialization function after the script has loaded
+        if (typeof createClient !== 'undefined') {
+            console.log('Supabase client load successfuly.');
+            initializeSupabase();
+        } else {
+            // This case should be rare if the script tag is positioned correctly
+            console.error('Supabase client failed to load. Check the script source.');
+        }
+    </script>
+</body>
+
+</html>
